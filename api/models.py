@@ -59,3 +59,12 @@ class FoundItem(models.Model):
     vehicle_type = models.CharField(max_length=100, null=True),
     vehicle_description = models.TextField(null=True),
     status = models.CharField(max_length=10, choices=STATUS, default='pending')
+
+    def __str__(self):
+        return self.item_name
+    
+class Match(models.Model):
+    lost_item = models.ForeignKey(LostItem, on_delete=models.CASCADE, related_name='lost_item_matches')
+    found_item = models.ForeignKey(FoundItem, on_delete=models.CASCADE, related_name='found_item_matches')
+    match_score = models.FloatField()
+    date_matched = models.DateTimeField(auto_now_add=True)
