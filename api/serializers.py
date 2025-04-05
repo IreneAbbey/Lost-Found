@@ -39,6 +39,7 @@ class LostItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = LostItem
         fields = '__all__'
+        extra_kwargs = {'user': {'required': False}}
 
 class FoundItemSerializer(serializers.ModelSerializer):
     class Meta:
