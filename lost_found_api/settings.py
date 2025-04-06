@@ -70,6 +70,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'lost_found_api.wsgi.application'
 
+AUTH_USER_MODEL = 'api.User'
+
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
