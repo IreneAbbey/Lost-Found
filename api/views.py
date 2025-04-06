@@ -24,7 +24,7 @@ def register_view(request):
         form = UserRegistrationForm()
         driver_form = DriverForm()
 
-    return render(request, 'accounts/register.html', {'form': form, 'driver_form': driver_form})
+    return render(request, 'api/register.html', {'form': form, 'driver_form': driver_form})
 
 
 def login_view(request):
@@ -36,6 +36,6 @@ def login_view(request):
             login(request, user)
             return redirect('dashboard')
         else:
-            return render(request, 'accounts/login.html', {'error': 'Invalid credentials'})
+            return render(request, 'api/login.html', {'error': 'Invalid credentials'})
 
-    return render(request, 'accounts/login.html')
+    return render(request, 'api/login.html')

@@ -1,5 +1,5 @@
 from django import forms
-from api.models import User
+from api.models import Driver, User
 
 
 class UserRegistrationForm(forms.ModelForm):
@@ -20,4 +20,4 @@ class UserRegistrationForm(forms.ModelForm):
 class DriverForm(forms.ModelForm):
     class Meta:
         model = Driver
-        fields = ['name', 'email', 'phone_number', 'location', 'vehicle_type', 'vehicle_number']
+        fields = ['vehicle_type', 'vehicle_description']

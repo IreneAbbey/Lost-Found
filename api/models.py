@@ -28,7 +28,7 @@ class CustomUserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     user_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True, default='example@example.com')
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
@@ -52,44 +52,44 @@ class Driver(models.Model):
     def __str__(self):
         return f"{self.user.name} - {self.vehicle_type}"
 
-class LostItem(models.Model):
-    STATUS = [
-        ('pending', 'Pending'),
-        ('matched', 'Matched'),
-        ('recorved', 'Recovered')
-    ]
-    user = models.ForeignKey(User, on_delete = models.CASCADE)
-    item_name = models.CharField(max_length=200),
-    description = models.TextField(),
-    date_lost = models.DateTimeField(null=True),
-    location = models.CharField(max_length=200),
-    vehicle_type = models.CharField(max_length=100),
-    vehicle_description = models.TextField(),
-    status = models.CharField(max_length=10, choices=STATUS, default='pending')
+# class LostItem(models.Model):
+#     STATUS = [
+#         ('pending', 'Pending'),
+#         ('matched', 'Matched'),
+#         ('recorved', 'Recovered')
+#     ]
+#     user = models.ForeignKey(User, on_delete = models.CASCADE)
+#     item_name = models.CharField(max_length=200),
+#     description = models.TextField(),
+#     date_lost = models.DateTimeField(null=True),
+#     location = models.CharField(max_length=200),
+#     vehicle_type = models.CharField(max_length=100),
+#     vehicle_description = models.TextField(),
+#     status = models.CharField(max_length=10, choices=STATUS, default='pending')
 
-    def __str__(self):
-        return self.item_name
+#     def __str__(self):
+#         return self.item_name
 
-class FoundItem(models.Model):
-    STATUS = [
-        ('pending', 'Pending'),
-        ('matched', 'Matched'),
-        ('returned', 'Returned')
-    ]
-    user = models.ForeignKey(User, on_delete= models.CASCADE),
-    item_name = models.CharField(max_length=200),
-    description = models.TextField(),
-    date_found = models.DateTimeField(null=False),
-    location = models.CharField(max_length=200),
-    vehicle_type = models.CharField(max_length=100, null=True),
-    vehicle_description = models.TextField(null=True),
-    status = models.CharField(max_length=10, choices=STATUS, default='pending')
+# class FoundItem(models.Model):
+#     STATUS = [
+#         ('pending', 'Pending'),
+#         ('matched', 'Matched'),
+#         ('returned', 'Returned')
+#     ]
+#     user = models.ForeignKey(User, on_delete= models.CASCADE),
+#     item_name = models.CharField(max_length=200),
+#     description = models.TextField(),
+#     date_found = models.DateTimeField(null=False),
+#     location = models.CharField(max_length=200),
+#     vehicle_type = models.CharField(max_length=100, null=True),
+#     vehicle_description = models.TextField(null=True),
+#     status = models.CharField(max_length=10, choices=STATUS, default='pending')
 
-    def __str__(self):
-        return self.item_name
+#     def __str__(self):
+#         return self.item_name
     
-class Match(models.Model):
-    lost_item = models.ForeignKey(LostItem, on_delete=models.CASCADE, related_name='lost_item_matches')
-    found_item = models.ForeignKey(FoundItem, on_delete=models.CASCADE, related_name='found_item_matches')
-    match_score = models.FloatField()
-    date_matched = models.DateTimeField(auto_now_add=True)
+# class Match(models.Model):
+#     lost_item = models.ForeignKey(LostItem, on_delete=models.CASCADE, related_name='lost_item_matches')
+#     found_item = models.ForeignKey(FoundItem, on_delete=models.CASCADE, related_name='found_item_matches')
+#     match_score = models.FloatField()
+#     date_matched = models.DateTimeField(auto_now_add=True)
