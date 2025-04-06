@@ -1,41 +1,32 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from .forms import UserRegistrationForm, DriverForm
-from .models import User, Driver
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
 
-def register_view(request):
-    if request.method == 'POST':
-        form = UserRegistrationForm(request.POST)
-        driver_form = DriverForm(request.POST)
+class RegisterView(APIView):
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        if form.is_valid():
-            user = form.save(commit=False)
-            password = form.cleaned_data['password']
-            user.set_password(password)
-            user.save()
+class LoginView(APIView):
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token)
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            if user.role == 'driver' and driver_form.is_valid():
-                driver = driver_form.save(commit=False)
-                driver.user = user
-                driver.save()
+class ProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
-            return redirect('login')
-    else:
-        form = UserRegistrationForm()
-        driver_form = DriverForm()
-
-    return render(request, 'api/register.html', {'form': form, 'driver_form': driver_form})
-
-
-def login_view(request):
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        user = authenticate(request, email=email, password=password)
-        if user:
-            login(request, user)
-            return redirect('dashboard')
-        else:
-            return render(request, 'api/login.html', {'error': 'Invalid credentials'})
-
-    return render(request, 'api/login.html')
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
