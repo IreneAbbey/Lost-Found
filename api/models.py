@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import PermissionsMixin
 
 
 class UserManager(BaseUserManager):
@@ -14,14 +14,18 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
     
-    def create_superuser(self, email, name, password=None, **extra_fields):
-        extra_fields.setdefault('role', 'admin')
+    def create_superuser(self, name, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        return self.create_user(email, name, password, **extra_fields)
+        extra_fields.setdefault('role', 'admin')
+
+        if extra_fields.get('role') != 'admin':
+            raise ValueError('Superuser must have role=admin.')
+
+        return self.create_user(email=email, name=name, password=password, **extra_fields)
 
 
-class User(AbstractBaseUser):
+class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = (
         ('admin', 'Admin'),
         ('driver', 'Driver'),
@@ -33,7 +37,7 @@ class User(AbstractBaseUser):
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     location = models.CharField(max_length=100, blank=True, null=True)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default = 'passenger')
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 

@@ -5,7 +5,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from api import models
 from api.models import FoundItem, LostItem, Match
-from .serializers import LostItemSerializer, RegisterSerializer, LoginSerializer, UserSerializer
+from .serializers import FoundItemSerializer, LostItemSerializer, RegisterSerializer, LoginSerializer, UserSerializer
 
 class RegisterView(APIView):
     def post(self, request):
@@ -164,3 +164,38 @@ class UserMatchesView(APIView):
             })
 
         return Response(data)
+
+class AdminDashboardView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        if request.user.role != "admin":
+            return Response({"error": "Access denied"}, status=status.HTTP_403_FORBIDDEN)
+        lost_items = LostItem.objects.all()
+        found_items = FoundItem.objects.all()
+        matches = Match.objects.all()
+
+        data = {
+            "lost_items_count": lost_items.count(),
+            "found_items_count": found_items.count(),
+            "matches_count": matches.count(),
+        }
+
+        lost_data = LostItemSerializer(lost_items, many=True).data
+        found_data = FoundItemSerializer(found_items, many=True).data
+
+        match_data = [
+            {
+                "match_id": match.id,
+                "lost_item_id": match.lost_item.id,
+                "found_item_id": match.found_item.id,
+                "match_score": match.match_score
+            }
+            for match in matches
+        ]
+
+        return Response({
+            "lost_items": lost_data,
+            "found_items": found_data,
+            "matches": match_data,
+        }, status=200)
