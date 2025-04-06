@@ -1,47 +1,46 @@
-# from django.contrib.auth import get_user_model
-# from rest_framework import serializers
-# from rest_framework.authentication import authenticate
+from rest_framework import serializers
+from .models import DriverProfile, User
+from django.contrib.auth import authenticate
 
-# from api.models import FoundItem, LostItem
 
-# User = get_user_model()
+class DriverProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DriverProfile
+        fields = ('license_plate', 'vehicle_type', 'vehicle_description')
+        extra_kwargs = {
+            'user': {'read_only': True}
+        }
 
-# class RegisterSerializer(serializers.ModelSerializer):
-#     password = serializers.CharField(write_only=True)
 
-#     class Meta:
-#         model = User
-#         fields = ['username', 'email', 'password']
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    driver_profile = DriverProfileSerializer(required=False)
 
-#     def create(self, validated_data):
-#         return User.objects.create_user(
-#             username=validated_data['username'],
-#             email=validated_data['email'],
-#             password=validated_data['password']
-#         )
-    
-# class LoginSerializer(serializers.Serializer):
-#     username = serializers.CharField()
-#     password = serializers.CharField(write_only=True)
+    class Meta:
+        model = User
+        fields = ('id', 'name', 'email', 'phone_number', 'location', 'role', 'password', 'driver_profile')
 
-#     def validate(self, data):
-#         user = authenticate(username=data['username'], password=data['password'])
-#         if not user:
-#             raise serializers.ValidationError("Invalid username or password.")
-#         return user
-    
-# class UserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ['id', 'username', 'email', 'phone_number', 'role']
+    def create(self, validated_data):
+        driver_data = validated_data.pop('driver_profile', None)
+        user = User.objects.create_user(**validated_data)
+        
+        if user.role == 'driver' and driver_data:
+            DriverProfile.objects.create(user=user, **driver_data)
+        
+        return user
 
-# class LostItemSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = LostItem
-#         fields = '__all__'
-#         extra_kwargs = {'user': {'required': False}}
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
 
-# class FoundItemSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = FoundItem
-#         fields = '__all__'
+    def validate(self, data):
+        user = authenticate(email=data['email'], password=data['password'])
+        if not user:
+            raise serializers.ValidationError("Invalid credentials")
+        return user
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'name', 'email', 'phone_number', 'location', 'role')
+
