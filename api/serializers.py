@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import DriverProfile, User
+from .models import DriverProfile, LostItem, User
 from django.contrib.auth import authenticate
 
 
@@ -44,3 +44,9 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'name', 'email', 'phone_number', 'location', 'role')
 
+
+class LostItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LostItem
+        fields = '__all__'
+        read_only_fields = ['user', 'timestamp']
