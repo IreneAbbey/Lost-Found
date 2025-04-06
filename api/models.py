@@ -1,6 +1,8 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth import get_user_model
+
 
 class UserManager(BaseUserManager):
     def create_user(self, email, name, password=None, **extra_fields):
@@ -76,3 +78,12 @@ class FoundItem(models.Model):
 
     def __str__(self):
         return super().__str__()
+    
+class Match(models.Model):
+    lost_item = models.ForeignKey(LostItem, on_delete=models.CASCADE, related_name='lost_items')
+    found_item = models.ForeignKey(FoundItem, on_delete=models.CASCADE, related_name='found_items')
+    match_score = models.FloatField()
+    date_matched = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.lost_item.user.name} - {self.lost_item.item_name} - {self.found_item.user.name} - {self.found_item.item_name}"
