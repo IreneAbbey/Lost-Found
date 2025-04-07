@@ -54,7 +54,7 @@ class ReportFoundItemView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        serializer = LostItemSerializer(data=request.data)
+        serializer = FoundItemSerializer(data=request.data)
         if serializer.is_valid():
             found_item = serializer.save(user = request.user)
             matches = save_matches_for_found_item(found_item)
